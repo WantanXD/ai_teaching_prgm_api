@@ -8,8 +8,9 @@ const bcrypt = require("bcrypt");
 router.post("/register", async(req, res) => {
     const { name, email, pass } = req.body;
 
-    const salt = /*Math.floor(Math.random() * 65535)*/4;
-    const hashedPassword = await bcrypt.hash(pass, salt);
+    const salt = Math.floor(Math.random() * 65535);
+    const password = salt + pass;
+    const hashedPassword = await bcrypt.hash(password, 5);
     
     const user = await prisma.authenticate.create({
         data : {

@@ -4,7 +4,7 @@ const cors = require("cors");
 require("dotenv").config();
 const authRoute = require("./routers/auth");
 
-const PORT = 4649;
+const PORT = 4650;
 
 app.use(express.json());
 app.use(cors());
