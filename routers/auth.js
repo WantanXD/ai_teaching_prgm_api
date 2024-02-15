@@ -8,15 +8,17 @@ const bcrypt = require("bcrypt");
 router.post("/register", async(req, res) => {
     const { name, email, pass } = req.body;
 
+    // ランダムなソルト値を生成し、同じパスワードでもユーザごとに異なるハッシュ値で保存されるようにする
     const salt = Math.floor(Math.random() * 65535);
-    const password = salt + pass;
-    const hashedPassword = await bcrypt.hash(password, 5);
+    const saltedPass = salt + pass;
+    const hashedPass = await bcrypt.hash(saltedPass, 5);
     
+    // supabase上のDBにデータを送信
     const user = await prisma.authenticate.create({
         data : {
             name,
             email,
-            pass:hashedPassword,
+            pass:hashedPass,
             salt
         }
     });
