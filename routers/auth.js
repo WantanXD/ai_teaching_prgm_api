@@ -6,6 +6,7 @@ const bcrypt = require("bcrypt");
 
 // ユーザ登録
 router.post("/register", async(req, res) => {
+    
     const { name, email, pass } = req.body;
 
     // ランダムなソルト値を生成し、同じパスワードでもユーザごとに異なるハッシュ値で保存されるようにする
