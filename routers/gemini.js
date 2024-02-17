@@ -4,12 +4,12 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({model: "gemini-pro"});
 
 // 問題文を生成する
-router.post("/GenerateQuestion", async(req, res) => {
+router.post("/generateQuestion", async(req, res) => {
 
     const { pl } = req.body;
 
     // 問題を生成
-    const generateQuestionPrompt = `"${pl}"に関するプログラミングの問題を1つ出力して`;
+    const generateQuestionPrompt = `プログラミング言語"${pl}"のquestionを1つ出力して。questionとは、プログラミング言語${pl}の知識を試すものであるとする。`;
 
     const generateQuestion = await model.generateContentStream(generateQuestionPrompt);
 
@@ -22,7 +22,7 @@ router.post("/GenerateQuestion", async(req, res) => {
 });
 
 // 解答の正誤判定
-router.post("/AnswerCheck", async(req, res) => {
+router.post("/answerCheck", async(req, res) => {
 
     const {question, answer} = req.body;
     const MAX_COMMENTS = 4;
@@ -44,13 +44,17 @@ router.post("/AnswerCheck", async(req, res) => {
     console.log(descriptionResponce.text());
     const comments = descriptionResponce.text().split("---");
 
-    const returnData = {
+    let returnData = {
         tof: tof,
-        comment1: comments[0],
-        comment2: comments[1],
-        comment3: comments[2],
-        comment4: comments[3]
     }
+
+    let index = 0;
+    comments.map((text) => {
+        if (text !== "") {
+            returnData[`comment${index}`] = `${text}`;
+            index++;
+        }
+    })
 
     return res.json({returnData});
 });
