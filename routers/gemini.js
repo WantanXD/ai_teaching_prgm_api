@@ -9,7 +9,7 @@ router.post("/generateQuestion", async(req, res) => {
     const { pl } = req.body;
 
     // 問題を生成
-    const generateQuestionPrompt = `プログラミング言語"${pl}"のquestionを1つ出力して。questionとは、プログラミング言語${pl}の知識を試すものであるとする。`;
+    const generateQuestionPrompt = `プログラミング言語"${pl}"のquestionを1つ出力して。questionとは、プログラミング言語${pl}の知識を試すものであるとし、問題文`;
 
     const generateQuestion = await model.generateContentStream(generateQuestionPrompt);
 
