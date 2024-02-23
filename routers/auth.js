@@ -91,4 +91,15 @@ router.post("/login", async(req, res) => {
   }
 })
 
+router.post("/logout", async(req, res) => {
+  try {
+    return res.status(200).cookie("jwtToken", "", {
+      httpOnly: true,
+      expires: new Date(Date.new() + ms("1d")),
+    });
+  } catch (e) {
+    console.log(e);
+  }
+})
+
 module.exports = router;
