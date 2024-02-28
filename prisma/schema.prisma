@@ -11,20 +11,22 @@ datasource db {
 }
 
 model Authenticate {
-  id    Int     @id @default(autoincrement())
-  name  String
-  email String  @unique
-  pass  String
-  salt  Int
+  id      Int     @id @default(autoincrement())
+  name    String
+  email   String  @unique
+  pass    String
+  salt    Int
+  qadata  QAData[]
 }
 
-model QandAData {
-  id            Int     @id @default(autoincrement())
-  userId        Int
-  lang          String
-  tof           Boolean
-  question      String
-  answer        String
-  model_answer  String
-  comment       String
+model QAData {
+  id        Int     @id @default(autoincrement())
+  user      Authenticate    @relation(fields: [userId], references: [id])
+  userId    Int
+  lang      String
+  tof       Boolean
+  question  String
+  answer    String
+  modelAns  String
+  comment   String
 }

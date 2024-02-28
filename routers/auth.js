@@ -46,7 +46,12 @@ router.post("/register", async(req, res) => {
     return res.status(200).cookie("jwtToken", jwtToken, {
       httpOnly: true,
       expires: new Date(Date.now() + ms("2d")),  
-    });
+    }).json(
+      {
+        name: name,
+        email: email,
+      }
+    );
   }catch (e) {
     console.log(e);
   }
@@ -71,19 +76,27 @@ router.post("/login", async(req, res) => {
       throw new Error("NOT_EXIST_USER");  
     }
 
+    const saltedPass = user.salt + pass;
     // パスワードを比較する
-    const match = await bcrypt.compare(user.pass === (pass + user.salt));
-    if (match) {
-      const jwtToken = jwtHelper.createToken(user.email, user.name);
-      res.cookie("jwtToken", jwtToken, {
-        httpOnly: true,
-        expires: new Date(Date.now() + ms("2d")),
-      }).json({
-        user: {id: user.id}
-      });
-    }else {
-      throw new Error("SERVER_ERROR");  
-    }
+    await bcrypt.compare(saltedPass, user.pass).then(result => {
+      if (result) {
+        const jwtToken = jwtHelper.createToken(user.email, user.name);
+        res.cookie("jwtToken", jwtToken, {
+          httpOnly: true,
+          expires: new Date(Date.now() + ms("2d")),
+        }).json({
+          success: true,  
+          user: {id: user.id}
+        });
+      } else {
+        console.log("password is not match!");
+        res.json({
+          success: false  
+        });
+      }
+    }).catch(err => {
+      throw new Error("SERVER_ERROR:" + err);
+    });
   }catch (e) {
     if (e instanceof Error) {
       console.log(e.message);  
