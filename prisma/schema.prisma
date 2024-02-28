@@ -17,3 +17,14 @@ model Authenticate {
   pass  String
   salt  Int
 }
+
+model QandAData {
+  id            Int     @id @default(autoincrement())
+  userId        Int
+  lang          String
+  tof           Boolean
+  question      String
+  answer        String
+  model_answer  String
+  comment       String
+}
