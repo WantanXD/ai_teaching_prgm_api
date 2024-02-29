@@ -39,10 +39,11 @@ router.post("/generateQuestion", async(req, res) => {
 router.post("/answerCheck", async(req, res) => {
 
     const {question, answer, modelAnswer, pl} = req.body;
+    console.log("answerChecking...");
     
     // クエリパラメータから問題文に対する回答を出力
     // 問題文に対して、ユーザの記述したプログラムが正しいかどうかをAiが判断する
-    const answerCheckPrompt = `プログラミング言語${pl}に関する問題文「${question}」とその模範解答「${modelAnswer}」を表す内容として、ユーザの解答「${answer}」が問題文の意義と合っている場合は"Apple"を出力して。そうでない場合は"Grape"を表示して。どちらにも当てはまらない場合は"Orange"を出力して`;
+    const answerCheckPrompt = `プログラミング言語${pl}に関する問題文「${question}」に対して、ユーザの解答「${answer}」が問題文の解答として正しい、あるいは問題文の題意に沿っており、要求された問題文を満たす解答である場合は"Apple"を出力して。そうでない場合は"Grape"を表示して。どちらにも当てはまらない場合は"Orange"を出力して。そうでない場合あるいはどちらにも当てはまらない場合と判断した際には、その理由を出力して。`;
     const descriptionPrompt = `プログラミング言語${pl}に関する問題文「${question}」の模範解答「${modelAnswer}」を生成して。また、問題文「${question}」そのものに対する解説を生成して。もし存在するなら「${answer}」以外の簡単な別解、その別解の解説を出力して。ただし、必ずそれぞれの項目の間に特殊文字"---"を入れて。`;
 
     const answerCheck = await model.generateContentStream(answerCheckPrompt);
@@ -52,14 +53,16 @@ router.post("/answerCheck", async(req, res) => {
     const descriptionResponce = await description.response; 
 
     // 正誤判定記録
-    const tof = answerCheckResponce.text();
+    const tof_comment = answerCheckResponce.text();
+    const firstline = tof_comment.indexOf('\n');
     // コメント記録変数
     const comments = descriptionResponce.text().split("---");
 
-    console.log(tof);
+    console.log(tof_comment);
 
     let returnData = {
-        tof: tof,
+        tof: tof_comment.substring(0, firstline),
+        reasons: firstline + 1 >= tof_comment.length ? null : tof_comment.substring(firstline + 1)
     }
 
     let index = 0;
@@ -70,6 +73,7 @@ router.post("/answerCheck", async(req, res) => {
         }
     })
 
+    console.log("sending...");
     return res.json({returnData});
 });
 
