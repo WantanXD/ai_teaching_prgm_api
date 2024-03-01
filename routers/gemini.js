@@ -8,8 +8,10 @@ router.post("/generateQuestion", async(req, res) => {
 
     const { pl } = req.body;
 
+    console.log("generating question...");
+
     // 問題を生成
-    const generateQuestionPrompt = `プログラミング言語"${pl}"のquestionを1つ出力して。questionとは、プログラミング言語${pl}の知識を試すものであるとする。生成した問題に対する模範解答も生成して。ただし、学生に解答が知られてしまうといけないので、必ず問題と模範解答を"\n"で区切ること。`;
+    const generateQuestionPrompt = `プログラミング言語"${pl}"のquestionを1つ出力して。questionとは、プログラミング言語${pl}の知識を試すものであるとするが、「エラーがあるコードを出題し、修正させる」ような問題は出力しないでください。生成した問題に対する模範解答も生成して。ただし、学生に解答が知られてしまうといけないので、必ず問題と模範解答を"\n"で区切ること。`;
 
     const generateQuestion = await model.generateContentStream(generateQuestionPrompt);
 
@@ -39,7 +41,7 @@ router.post("/generateQuestion", async(req, res) => {
 router.post("/answerCheck", async(req, res) => {
 
     const {question, answer, modelAnswer, pl} = req.body;
-    console.log("answerChecking...");
+    console.log("checking answer...");
     
     // クエリパラメータから問題文に対する回答を出力
     // 問題文に対して、ユーザの記述したプログラムが正しいかどうかをAiが判断する
@@ -53,15 +55,13 @@ router.post("/answerCheck", async(req, res) => {
     const descriptionResponce = await description.response; 
 
     // 正誤判定記録
-    const tof_comment = answerCheckResponce.text();
+    const tof_comment = answerCheckResponce.text().replace(/^\n+/, '');
     const firstline = tof_comment.indexOf('\n');
     // コメント記録変数
     const comments = descriptionResponce.text().split("---");
 
-    console.log(tof_comment);
-
     let returnData = {
-        tof: tof_comment.substring(0, firstline),
+        tof: firstline !== -1 ? tof_comment.substring(0, firstline) : tof_comment,
         reasons: firstline + 1 >= tof_comment.length ? null : tof_comment.substring(firstline + 1)
     }
 
