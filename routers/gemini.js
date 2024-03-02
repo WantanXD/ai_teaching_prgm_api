@@ -55,14 +55,14 @@ router.post("/answerCheck", async(req, res) => {
     const descriptionResponce = await description.response; 
 
     // 正誤判定記録
-    const tof_comment = answerCheckResponce.text().replace(/^\n+/, '');
+    const tof_comment = answerCheckResponce.text().replace(/^\n+/, '').replace('Grape', 'fault').replace('Orange', 'fault');
     const firstline = tof_comment.indexOf('\n');
     // コメント記録変数
     const comments = descriptionResponce.text().split("---");
 
     let returnData = {
         tof: firstline !== -1 ? tof_comment.substring(0, firstline) : tof_comment,
-        reasons: firstline + 1 >= tof_comment.length ? null : tof_comment.substring(firstline + 1)
+        reasons: (firstline + 1 >= tof_comment.length ? null : tof_comment.substring(firstline + 1)).replace('Apple', '').replace('Grape', '').replace('Orange', '')
     }
 
     let index = 0;

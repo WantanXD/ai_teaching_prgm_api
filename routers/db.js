@@ -5,7 +5,7 @@ const jwtHelper = require('./jwtHelper');
 
 router.post('/QandARegister', async(req, res) => {
   
-  const {lang, question, answer, tof, modelAnswer, comment, userId} = req.body;
+  const {lang, question, answer, tof, reasons, modelAnswer, comment, userId} = req.body;
 
   const boolTof = tof === 'Apple' ? true : false;
   
@@ -14,6 +14,7 @@ router.post('/QandARegister', async(req, res) => {
       userId,
       lang,
       tof: boolTof,
+      reasons,
       question,
       answer,
       modelAns: modelAnswer,

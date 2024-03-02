@@ -25,6 +25,7 @@ model QAData {
   userId    Int
   lang      String
   tof       Boolean
+  reasons   String?
   question  String
   answer    String
   modelAns  String
