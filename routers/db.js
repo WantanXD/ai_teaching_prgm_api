@@ -85,4 +85,17 @@ router.post('/getTofRate', async(req, res) => {
   return res.json({ returnData });
 });
 
+router.post('/getHistory', async(req, res) => {
+
+  const {userId, limit} = req.body;
+
+  const returnData = await prisma.QAData.findMany({
+    take: limit,
+    where: {
+      userId: userId,
+    },
+  })
+  return res.json({returnData});
+});
+
 module.exports = router;
