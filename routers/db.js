@@ -38,6 +38,20 @@ router.post('/QandARegister', async(req, res) => {
   });
 
   return res.json({ QandAData });
-})
+});
+
+router.post('/getUserIdFromEmail', async(req, res) => {
+
+  const {email} = req.body;
+  const returnData = await prisma.authenticate.findFirst ({
+    select: {
+      id: true,
+    },
+    where: {
+      email: email,
+    }
+  });
+  return res.json({returnData});
+});
 
 module.exports = router;
