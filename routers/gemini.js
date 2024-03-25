@@ -8,16 +8,28 @@ router.post("/generateQuestion", async(req, res) => {
 
     const { pl } = req.body;
 
+    console.log("generating question...");
+
     // 問題を生成
-    const generateQuestionPrompt = `プログラミング言語"${pl}"のquestionを1つ出力して。questionとは、プログラミング言語${pl}の知識を試すものであるとする。生成した問題に対する模範解答も生成して。ただし、学生に解答が知られてはいけないので、問題と模範解答は改行文字で必ず区切って。`;
+    const generateQuestionPrompt = `プログラミング言語"${pl}"のquestionを1つ出力して。questionとは、プログラミング言語${pl}の知識を試すものであるとするが、「エラーがあるコードを出題し、修正させる」ような問題は出力しないでください。生成した問題に対する模範解答も生成して。ただし、学生に解答が知られてしまうといけないので、必ず問題と模範解答を"\n"で区切ること。`;
 
     const generateQuestion = await model.generateContentStream(generateQuestionPrompt);
 
-    const responce = await (await generateQuestion.response).text().split(/(?=模範解答)|(?=\*\*模範解答\*\*)/);
+    let response = await (await generateQuestion.response).text().split(/(?=模範解答)/);
+    
+    const pattern = /^模範解答\n/;
+
+    if (response[1] !== null && response[1] !== '' && !pattern.test(response[1])) {
+      const lastIndex = response[0].lastIndexOf('\n');
+      const rawResponse = response[0];
+      response[0] = rawResponse.slice(0, lastIndex) + '\n';
+      const tmp = rawResponse.slice(lastIndex + 1);
+      response[1] = tmp + response[1];
+    }
 
     const returnData = {
-        question: responce[0],
-        modelAnswer: responce[1]
+      question: response[0],
+      modelAnswer: response[1]
     }
 
     return res.json({ returnData });
@@ -29,26 +41,28 @@ router.post("/generateQuestion", async(req, res) => {
 router.post("/answerCheck", async(req, res) => {
 
     const {question, answer, modelAnswer, pl} = req.body;
+    console.log("checking answer...");
     
     // クエリパラメータから問題文に対する回答を出力
     // 問題文に対して、ユーザの記述したプログラムが正しいかどうかをAiが判断する
-    const answerCheckPrompt = `プログラミング言語${pl}に関する問題文「${question}」に対する模範解答「${modelAnswer}」を表す内容として、ユーザの解答「${answer}」が適している場合は"Y"を出力して。そうでない場合は"Great"を出力して。判断できない場合は"Great"を出力して。`;
+    const answerCheckPrompt = `プログラミング言語${pl}に関する問題文「${question}」に対して、ユーザの解答「${answer}」が問題文の解答として正しい、あるいは問題文の題意に沿っており、要求された問題文を満たす解答である場合は"Apple"を出力して。そうでない場合は"Grape"を表示して。どちらにも当てはまらない場合は"Orange"を出力して。そうでない場合あるいはどちらにも当てはまらない場合と判断した際には、その理由を出力して。`;
     const descriptionPrompt = `プログラミング言語${pl}に関する問題文「${question}」の模範解答「${modelAnswer}」を生成して。また、問題文「${question}」そのものに対する解説を生成して。もし存在するなら「${answer}」以外の簡単な別解、その別解の解説を出力して。ただし、必ずそれぞれの項目の間に特殊文字"---"を入れて。`;
 
     const answerCheck = await model.generateContentStream(answerCheckPrompt);
     const description = await model.generateContentStream(descriptionPrompt);
 
     const answerCheckResponce = await answerCheck.response;
-    const descriptionResponce = await description.response;
+    const descriptionResponce = await description.response; 
 
     // 正誤判定記録
-    const tof = answerCheckResponce.text();
+    const tof_comment = answerCheckResponce.text().replace(/^\n+/, '').replace('Grape', 'fault').replace('Orange', 'fault');
+    const firstline = tof_comment.indexOf('\n');
     // コメント記録変数
-    console.log(descriptionResponce.text());
     const comments = descriptionResponce.text().split("---");
 
     let returnData = {
-        tof: tof,
+        tof: firstline !== -1 ? tof_comment.substring(0, firstline) : tof_comment,
+        reasons: (firstline + 1 >= tof_comment.length ? null : tof_comment.substring(firstline + 1)).replace('Apple', '').replace('Grape', '').replace('Orange', '')
     }
 
     let index = 0;
@@ -59,6 +73,7 @@ router.post("/answerCheck", async(req, res) => {
         }
     })
 
+    console.log("sending...");
     return res.json({returnData});
 });
 
