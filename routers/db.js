@@ -56,7 +56,7 @@ router.post('/getTofRate', async(req, res) => {
       tof: true,
     },
   });
-
+  
   const langRate = await prisma.QAData.groupBy({
     by: ['lang'],
     where: {
@@ -97,8 +97,23 @@ router.post('/getHistory', async(req, res) => {
     where: {
       userId: userId,
     },
-  });
+    });
   return res.json({returnData});
 });
+
+router.post('/getUserIdFromEmail', async(req, res) => {
+
+  const {email} = req.body;
+  const returnData = await prisma.authenticate.findFirst ({
+    select: {
+      id: true,
+    },
+    where: {
+      email: email,
+    }
+  });
+  
+  return res.json({returnData});
+)};
 
 module.exports = router;
