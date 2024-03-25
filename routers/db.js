@@ -114,6 +114,6 @@ router.post('/getUserIdFromEmail', async(req, res) => {
   });
   
   return res.json({returnData});
-)};
+});
 
 module.exports = router;
