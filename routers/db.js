@@ -90,11 +90,14 @@ router.post('/getHistory', async(req, res) => {
   const {userId, limit} = req.body;
 
   const returnData = await prisma.QAData.findMany({
+    orderBy: {
+      id: 'desc',
+    },
     take: limit,
     where: {
       userId: userId,
     },
-  })
+  });
   return res.json({returnData});
 });
 
