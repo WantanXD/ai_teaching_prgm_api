@@ -1,4 +1,5 @@
 const express = require("express");
+const cookieParser = require('cookie-parser');
 const app = express();
 const cors = require("cors");
 require("dotenv").config();
@@ -9,8 +10,14 @@ const jwtRoute = require('./routers/jwt');
 
 const PORT = 4649;
 
+const corsOpt = {
+  origin: ["http://localhost:3000"],
+  credentials: true,
+}
+
+app.use(cookieParser());
 app.use(express.json());
-app.use(cors());
+app.use(cors(corsOpt));
 
 app.use("/api/auth", authRoute);
 app.use("/api/gemini", geminiRoute);

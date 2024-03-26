@@ -4,8 +4,8 @@ class jwtHelper {
   
   static secretJwt = process.env.SECRET_JWT;
 
-  static createToken(email, name) {
-    const token = sign({ email:email, name:name }, this.secretJwt, { algorithm:'HS256', expiresIn:'30d' });
+  static createToken(email, name, deadline) {
+    const token = sign({ email, name, deadline }, this.secretJwt, { algorithm:'HS256', expiresIn:'30d' });
     return token;
   }
 
