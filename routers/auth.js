@@ -41,15 +41,21 @@ router.post("/register", async(req, res) => {
       }
     });
 
-    const jwtToken = jwtHelper.createToken(email, name);
+    const jwtToken = jwtHelper.createToken(email, name, new Date(Date.now() + ms('2d')));
 
-    return res.status(200).cookie("jwtToken", jwtToken, {
-      httpOnly: true,
-      expires: new Date(Date.now() + ms("2d")),  
-    }).json(
+    const user = await prisma.authenticate.findFirst({
+      where: {
+        email: email
+      }
+    })
+
+    return res.json(
       {
-        name: name,
-        email: email,
+        user:{
+          id: user.id,
+          name: name,
+        },
+        jwtToken: jwtToken
       }
     );
   }catch (e) {
@@ -80,18 +86,19 @@ router.post("/login", async(req, res) => {
     // パスワードを比較する
     await bcrypt.compare(saltedPass, user.pass).then(result => {
       if (result) {
-        const jwtToken = jwtHelper.createToken(user.email, user.name);
-        res.cookie("jwtToken", jwtToken, {
-          httpOnly: true,
-          expires: new Date(Date.now() + ms("2d")),
-        }).json({
+        const jwtToken = jwtHelper.createToken(user.email, user.name, new Date(Date.now() + ms('2d')));
+        res.json({
           success: true,  
-          user: {id: user.id}
+          user: {
+            id: user.id,
+            name: user.name,
+          },
+          jwtToken
         });
       } else {
         console.log("password is not match!");
         res.json({
-          success: false  
+          success: false
         });
       }
     }).catch(err => {
@@ -105,10 +112,10 @@ router.post("/login", async(req, res) => {
 })
 
 router.post("/logout", async(req, res) => {
+
   try {
-    return res.status(200).cookie("jwtToken", "", {
-      httpOnly: true,
-      expires: new Date(Date.new() + ms("1d")),
+    return res.json({
+      islogout: true
     });
   } catch (e) {
     console.log(e);

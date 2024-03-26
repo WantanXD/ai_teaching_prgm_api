@@ -1,7 +1,6 @@
 const router = require("express").Router();
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
-const jwtHelper = require('./jwtHelper');
 
 router.post('/QandARegister', async(req, res) => {
   
@@ -100,20 +99,5 @@ router.post('/getHistory', async(req, res) => {
     });
   return res.json({returnData});
 });
-
-router.post('/getUserIdFromEmail', async(req, res) => {
-
-  const {email} = req.body;
-  const returnData = await prisma.authenticate.findFirst ({
-    select: {
-      id: true,
-    },
-    where: {
-      email: email,
-    }
-  });
-  
-  return res.json({returnData});
-)};
 
 module.exports = router;

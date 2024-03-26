@@ -1,38 +1,34 @@
 const router = require('express').Router();
 const jwtHelper = require('./jwtHelper');
+const { PrismaClient } = require("@prisma/client");
+const prisma = new PrismaClient();
 const ms = require('ms');
 
 router.post('/tokenVerification', async(req, res) => {
-  
-  let token = ''
-  if (req.cookies.jwtToken) {
-    token = req.cookies.jwtToken;
-  } else {
-    return res.status(200).json({ isAuthenticated: false });
-  }
+  const { jwtToken } = req.body;
+  const decodedToken = jwtHelper.verifyToken(jwtToken);
 
-  const decode = jwtHelper.verifyToken(token);
-  if (decode) {
-    const token = jwtHelper.createToken(decode.email, decode.name);
-    const res = await fetch('./db/getUseridFromEmail', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ email: decode.email })
-    });
-    const userId = res.returnData.id;
-    res.cookie("jwtToken", token, {
-      httpOnly: true,
-      expires: new Date(Date.now() + ms('2d')),     // tokenの有効期限を2日にしている
-    });
-    res.status(200).json(
+  if (decodedToken) {
+    const token = jwtHelper.createToken(decodedToken.email, decodedToken.name, new Date(Date.now() + ms('2d')));
+    const user = await prisma.authenticate.findFirst({
+      where: {
+        email: decodedToken.email,
+      }
+    })
+    return res.json(
       { 
         isAuthenticated: true,
-        loginUser: decode.name,
-        loginUserId: userId,
+        user: {
+          name: decodedToken.name,
+          id: user.id,
+        },
+        jwtToken: token
       }
     );
+  }else {
+    return res.json({
+      isAuthenticated: false,
+    })
   }
 });
 
