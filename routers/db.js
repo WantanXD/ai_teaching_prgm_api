@@ -96,7 +96,7 @@ router.post('/getHistory', async(req, res) => {
     where: {
       userId: userId,
     },
-    });
+  });
   return res.json({returnData});
 });
 
