@@ -10,14 +10,9 @@ const jwtRoute = require('./routers/jwt');
 
 const PORT = 4649;
 
-const corsOpt = {
-  origin: ["http://localhost:3000"],
-  credentials: true,
-}
-
 app.use(cookieParser());
 app.use(express.json());
-app.use(cors(corsOpt));
+app.use(cors());
 
 app.use("/api/auth", authRoute);
 app.use("/api/gemini", geminiRoute);
