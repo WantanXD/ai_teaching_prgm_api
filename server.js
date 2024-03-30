@@ -10,7 +10,6 @@ const jwtRoute = require('./routers/jwt');
 
 const PORT = 4649;
 
-app.use(cookieParser());
 app.use(express.json());
 app.use(cors());
 
